@@ -2,11 +2,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "C++ Debug (lldb)",
+            "name": "OpenGL",
             "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/bin/app",
-            "preLaunchTask": "Build C++ project",
+            "preLaunchTask": "Build OpenGL project",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

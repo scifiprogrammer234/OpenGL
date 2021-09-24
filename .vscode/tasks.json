@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build C++ project",
+            "label": "Build OpenGL project",
             "type": "shell",
             "group": {
                 "kind": "build",
@@ -11,7 +11,7 @@
             "command": "make",
         },
         {
-            "label": "Build & run C++ project",
+            "label": "Build & run OpenGL project",
             "type": "shell",
             "group": {
                 "kind": "test",
