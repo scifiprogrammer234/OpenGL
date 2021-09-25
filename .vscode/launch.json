@@ -7,12 +7,13 @@
             "request": "launch",
             "program": "${workspaceFolder}/bin/app",
             "preLaunchTask": "Build OpenGL project",
+            "postDebugTask": "postdebugKill",
+            "console": "externalTerminal",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
-            "externalConsole": true,
-            "MIMode": "lldb"
+            "MIMode": "lldb",
         }
     ]
 }

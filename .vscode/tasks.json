@@ -9,6 +9,20 @@
                 "isDefault": true
             },
             "command": "make",
+            "presentation": {
+                "reveal": "never",
+                "clear": true,
+                "echo": false
+            },
+        },
+        {
+            "label": "postdebugKill",
+            "type": "process",
+            "command":[
+                "${command:workbench.action.terminal.kill}",
+                "${command:workbench.action.acceptSelectedQuickOpenItem}",
+            ],
+            "isBackground": true,
         },
         {
             "label": "Build & run OpenGL project",
@@ -20,7 +34,26 @@
             "command": "make",
             "args": [
                 "run"
-            ]
+            ],
+            "presentation": {
+                "reveal": "never",
+                "clear": true,
+                "echo": false
+            },
+        },
+        {
+            "label": "Terminate All Tasks",
+            "command": "echo ${input:terminate}",
+            "type": "shell",
+            "problemMatcher": []
         }
+    ],
+    "inputs": [
+        {
+            "id": "terminate",
+            "type": "command",
+            "command": "workbench.action.terminal.kill",
+            "args": "terminateAll"
+        },
     ]
 }
