@@ -126,28 +126,35 @@ int main(void)
     std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
     std::cout << "GL Version: " <<  (char *)glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
 
-    float positions[6] = {
-        -0.5f, -0.5f,
-        0.0f, 0.5f,
-        0.5f, -0.5f
+    float positions[] = {
+        -0.5f, -0.5f, // 0
+         0.5f, -0.5f, // 1
+         0.5f, 0.5f, // 2
+        -0.5f, 0.5f, // 3
+    };
+
+    unsigned int indices[] = {
+        0, 1, 2,
+        2, 3, 0
     };
 
     GLuint vao; // Mac
-    unsigned int buffer = 0;
 
     glGenVertexArrays(1, &vao); // Mac        |
     glBindVertexArray(vao); //                |
 
-    glEnableVertexAttribArray(0); // Enables the buffer layout
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
-
+    unsigned int buffer;
     glGenBuffers(1, &buffer);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6, positions, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 2, positions, GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+
+    unsigned int ibo;
+    glGenBuffers(1, &ibo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * 6, indices, GL_STATIC_DRAW);
 
     ShaderProgramSource source = ParseShader("res/shaders/Basic.shader");
 
@@ -165,8 +172,11 @@ int main(void)
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // changes color of screen
+        glClear(GL_COLOR_BUFFER_BIT);
+
         glBindVertexArray(vao); // `vao` is the vertex array object // Mac
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
