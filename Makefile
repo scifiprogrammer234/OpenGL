@@ -6,7 +6,7 @@ SRC		:= src
 INCLUDE	:= include
 LIB		:= lib
 
-LIBRARIES	:= -lGLEW -lglfw3
+LIBRARIES	:= -lglew -lglfw3
 EXECUTABLE	:= app
 
 
