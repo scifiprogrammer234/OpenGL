@@ -4,7 +4,7 @@ CXX_FLAGS := -Wall -Wextra -std=c++17 -g
 BIN		:= bin
 SRC		:= src
 INCLUDE1	:= include
-INCLUDE2	:= src/vender/stb_image/
+INCLUDE2	:= src/vender
 LIB		:= lib
 
 LIBRARIES	:= -lglew -lglfw3
