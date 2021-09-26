@@ -1,8 +1,3 @@
-#include <iostream>
-#include <string>
-#include <fstream>
-#include <sstream>
-
 // GLEW
 #define GLEW_STATIC
 #include <GL/glew.h>
@@ -10,9 +5,15 @@
 // GLFW
 #include <GLFW/glfw3.h>
 
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <sstream>
+
 #include "Renderer.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
+#include "VertexArray.h"
 
 struct ShaderProgramSource
 {
@@ -148,26 +149,22 @@ int main(void)
             2, 3, 0};
 
         GLuint vao;
+        GLCall(glGenVertexArrays(1, &vao));
+        GLCall(glBindVertexArray(vao));
 
-        glGenVertexArrays(1, &vao);
-        glBindVertexArray(vao);
-
+        VertexArray va;
         VertexBuffer vb(positions, 4 * 2 * sizeof(float));
 
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *)0);
+        VertexBufferLayout layout;
+        layout.Push<float>(2);
+        va.AddBuffer(vb , layout);
 
         IndexBuffer ib(indices, 6);
 
         ShaderProgramSource source = ParseShader("res/shaders/Basic.shader");
 
-        // std::cout << "Vertex" << std::endl;
-        // std::cout << source.VertexSource << std::endl;
-        // std::cout << "Fragment" << std::endl;
-        // std::cout << source.FragmentSource << std::endl;
-
         unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
-        glUseProgram(shader);
+        GLCall(glUseProgram(shader));
 
         GLCall(int location = glGetUniformLocation(shader, "u_Color"));
         ASSERT(location != -1);
@@ -192,8 +189,7 @@ int main(void)
             glUseProgram(shader);
             GLCall(glUniform4f(location, r, 0.3f, 0.8f, 1.0f));
 
-            GLCall(glBindVertexArray(vao)); // `vao` is the vertex array object
-
+            va.Bind();
             ib.Bind();
 
             GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
@@ -218,7 +214,7 @@ int main(void)
 
         glDeleteProgram(shader);
     }
-    
+
     glfwTerminate();
 
     return 0;
