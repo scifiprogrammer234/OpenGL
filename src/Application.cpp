@@ -9,6 +9,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <stdio.h>
 
 #include "Renderer.h"
 #include "VertexBuffer.h"
@@ -21,7 +22,10 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
-int main(void)
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw_gl3.h"
+
+int main()
 {
     GLFWwindow *window;
 
@@ -39,7 +43,7 @@ int main(void)
 #endif // <----------------------------------------------------------------------------|
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(960, 540, "Hello World", nullptr, nullptr);
+    window = glfwCreateWindow(960, 540, "OpenGL -Metal", nullptr, nullptr);
     if (!window)
     {
         glfwTerminate();
@@ -48,10 +52,7 @@ int main(void)
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
-
     glfwSwapInterval(1);
-
-    glewExperimental = GL_TRUE;
 
     if (glewInit() != GLEW_OK)
     {
@@ -66,14 +67,15 @@ int main(void)
 
         float positions[] = {
             100.0f , 100.0f  , 0.0f , 0.0f, // 0
-            200.5f , 100.0f  , 1.0f , 0.0f, // 1
+            200.0f , 100.0f  , 1.0f , 0.0f, // 1
             200.0f ,  200.0f  , 1.0f , 1.0f, // 2
             100.0f ,  200.0f  , 0.0f , 1.0f  // 3
         };
 
         unsigned int indices[] = {
             0, 1, 2,
-            2, 3, 0};
+            2, 3, 0
+        };
 
         GLCall(glEnable(GL_BLEND));
         GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
@@ -88,17 +90,13 @@ int main(void)
 
         IndexBuffer ib(indices, 6);
 
-        // glm::mat4 proj = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f);
-        glm::mat4 proj = glm::ortho(0.0f, 960.0f, 0.0f,540.0f, -1.0f, 1.0f);
-        glm::vec4 vp(100.0f, 100.0f, 0.0f, 1.0f);
-
-        glm::vec4 result = proj * vp;
+        // These values are used to calculate the aspect ratio of the window
+        glm::mat4 proj = glm::ortho(0.0f, 960.0f, 0.0f,540.0f, -1.0f, 1.0f); // left, right, bottom, top, near, far
+        glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(-100, 0, 0));
 
         Shader shader("res/shaders/Basic.shader");
         shader.Bind();
         shader.SetUniform4f("u_Color", 0.8f, 0.3f, 0.8f, 1.0f);
-
-        shader.SetUniformMat4f("u_MVP", proj);
 
         Texture texture("res/textures/windows_logo.png");
         texture.Bind();
@@ -114,11 +112,24 @@ int main(void)
 
         Renderer renderer;
 
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
+        ImGui_ImplGlfwGL3_Init(window, true);
+        ImGui::StyleColorsDark();
+
+        glm::vec3 translation(200, 200, 0);
+
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))
         {
             /* Render here */
             renderer.Clear();
+
+            glfwPollEvents();
+            ImGui_ImplGlfwGL3_NewFrame();
+
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), translation);
+            glm::mat4 mvp = proj * view * model;
 
             // glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // changes color of screen
 
@@ -126,6 +137,8 @@ int main(void)
 
             shader.Bind();
             shader.SetUniform4f("u_Color",r, 0.3f, 0.8f, 1.0f);
+            shader.SetUniformMat4f("u_MVP", mvp);
+
 
             renderer.Draw(va, ib, shader); // draw the triangle
             GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
@@ -137,6 +150,15 @@ int main(void)
 
             r += increment;
 
+        {
+            ImGui::SliderFloat3("Translation", &translation.x, 0.0f, 960.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        }
+
+            ImGui::Render();
+            ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
+
             /* Swap front and back buffers */
             glfwSwapBuffers(window);
 
@@ -144,6 +166,9 @@ int main(void)
             glfwPollEvents();
         }
     }
+    // Cleanup
+    ImGui_ImplGlfwGL3_Shutdown();
+    ImGui::DestroyContext();
     glfwTerminate();
 
     return 0;
