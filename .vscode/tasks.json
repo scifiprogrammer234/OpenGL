@@ -8,21 +8,12 @@
                 "kind": "build",
                 "isDefault": true
             },
-            "command": "make",
+            "command": "make", // Build the project
             "presentation": {
                 "reveal": "never",
                 "clear": true,
                 "echo": false
             },
-        },
-        {
-            "label": "postdebugKill",
-            "type": "process",
-            "command":[
-                "${command:workbench.action.terminal.kill}",
-                "${command:workbench.action.acceptSelectedQuickOpenItem}",
-            ],
-            "isBackground": true,
         },
         {
             "label": "Build & run OpenGL project",
@@ -33,7 +24,7 @@
             },
             "command": "make",
             "args": [
-                "run"
+                "run" // runs the executable
             ],
             "presentation": {
                 "reveal": "never",
@@ -42,18 +33,32 @@
             },
         },
         {
-            "label": "Terminate All Tasks",
-            "command": "echo ${input:terminate}",
-            "type": "shell",
-            "problemMatcher": []
-        }
-    ],
-    "inputs": [
+            "label": "Batch Clean Process",
+            "dependsOn": [
+                "PostDebugKill",
+                "PostDebugKill",
+                "Clean",
+            ],
+        },
         {
-            "id": "terminate",
-            "type": "command",
-            "command": "workbench.action.terminal.kill",
-            "args": "terminateAll"
+            "label": "PostDebugKill",
+            "type": "process",
+            "command":[
+                "${command:workbench.action.terminal.kill}",
+                "${command:workbench.action.acceptSelectedQuickOpenItem}",
+            ],
+        },
+        {
+            "label": "Clean",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "clean" // remove executable files using make clean
+            ],
+            "presentation": {
+                "reveal": "silent",
+                "clear": true,
+            }
         },
     ]
 }
