@@ -39,7 +39,6 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #ifdef __APPLE__  //                                                  Mac Specific -----|
-    std::cout << "I'm apple machine" << std::endl; //                                   |
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); //                             |
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);//                                         |
 #endif // <----------------------------------------------------------------------------|
@@ -63,36 +62,49 @@ int main()
     }
 
     std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
-
     {
         GLCall(glEnable(GL_BLEND));
         GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-
         Renderer renderer;
-
         ImGui::CreateContext();
         ImGui_ImplGlfwGL3_Init(window, true);
         ImGui::StyleColorsDark();
 
-        test::TestClearColor test;
+        test::Test* currentTest = nullptr;
+        test::TestMenu* testMenu = new test::TestMenu(currentTest);
+        currentTest = testMenu;
+
+        testMenu->RegisterTest<test::TestClearColor>("Pick Color");
 
         while (!glfwWindowShouldClose(window))
         {
+            GLCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
             renderer.Clear();
-
-            test.OnUpdate(0.0f);
-            test.OnRender();
 
             ImGui_ImplGlfwGL3_NewFrame();
 
-            test.OnImGuiRender();
+            if (currentTest)
+            {
+                currentTest->OnUpdate(0.0f);
+                currentTest->OnRender();
+                ImGui::Begin("ColorRamp");
+                if (currentTest != testMenu  && ImGui::Button("<-"))
+                {
+                    delete currentTest;
+                    currentTest = testMenu;
+                }
+                currentTest->OnImGuiRender();
+                ImGui::End();
+            }
 
             ImGui::Render();
             ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
-
             glfwSwapBuffers(window);
             glfwPollEvents();
         }
+            delete currentTest;
+            if (currentTest != testMenu)
+                delete testMenu;
     }
     // Cleanup
     ImGui_ImplGlfwGL3_Shutdown();
