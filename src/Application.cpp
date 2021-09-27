@@ -25,6 +25,8 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
 
+#include "tests/TestClearColor.h"
+
 int main()
 {
     GLFWwindow *window;
@@ -120,6 +122,12 @@ int main()
         glm::vec3 translationA(200, 200, 0);
         glm::vec3 translationB(400, 200, 0);
 
+        test::Test* currentTest = nullptr;
+        test::TestMenu* testMenu = new test::TestMenu(currentTest);
+        currentTest = testMenu;
+
+        testMenu->RegisterTest<test::TestClearColor>("Pick Color");
+
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))
         {
@@ -127,6 +135,20 @@ int main()
             renderer.Clear();
 
             ImGui_ImplGlfwGL3_NewFrame();
+
+            if (currentTest)
+            {
+                currentTest->OnUpdate(0.0f);
+                currentTest->OnRender();
+                ImGui::Begin("ColorRamp");
+                if (currentTest != testMenu  && ImGui::Button("<-"))
+                {
+                    delete currentTest;
+                    currentTest = testMenu;
+                }
+                currentTest->OnImGuiRender();
+                ImGui::End();
+            }
 
             {
                 glm::mat4 model = glm::translate(glm::mat4(1.0f), translationA);
@@ -156,12 +178,12 @@ int main()
 
             r += increment;
 
-        {
-            ImGui::SliderFloat3("Translation A", &translationA.x, 0.0f, 960.0f);
-            ImGui::SliderFloat3("Translation B", &translationB.x, 0.0f, 960.0f);
+            {
+                ImGui::SliderFloat3("Translation A", &translationA.x, 0.0f, 960.0f);
+                ImGui::SliderFloat3("Translation B", &translationB.x, 0.0f, 960.0f);
 
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-        }
+                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            }
 
             ImGui::Render();
             ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
@@ -172,6 +194,9 @@ int main()
             /* Poll for and process events */
             glfwPollEvents();
         }
+        delete currentTest;
+        if (currentTest != testMenu)
+            delete testMenu;
     }
     // Cleanup
     ImGui_ImplGlfwGL3_Shutdown();
